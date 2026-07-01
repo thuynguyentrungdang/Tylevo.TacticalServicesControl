@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.9.1 - Public Beta (released as v1.0.1)
 
 ### Fixed
 
