@@ -1,8 +1,64 @@
 # Tylevo's Tactical Services Control
 
-Tylevo's Tactical Services Control, or TSC, is a public beta Fire Support rework for SPT. It adds the TerraGroup TSC Uplink, phone-based support authorization, stash and carried rouble payment modes, A-10 and UH-60 support options, UAV recon tools, Fika support sync, and a local dashboard for host configuration.
+A BepInEx mod that reworks SamSWAT's Fire Support / Arys Reloaded into a TerraGroup-style tactical support system for SPT and Fika.
+
+This mod adds a **TerraGroup TSC Uplink** phone that lets you buy support authorizations in raid, then deploy them later from the YY gesture menu.
+
+Currently available support options:
+
+- A-10 autocannon strafe.
+- A-10 Double Pass.
+- UH-60 Black Hawk extraction.
+- Priority Exfil.
+- UAV Recon.
+- Focused Sweep.
 
 This project is derivative of SamSWAT's original Fire Support and SamSWAT's Fire Support - Arys Reloaded by Arys. Public redistribution is prepared with upstream permission recorded in `PERMISSIONS.md`, with full credit retained in `THIRD_PARTY_NOTICES.md` and `docs/credits.md`.
+
+## Requirements
+
+- SPT 4.0.13.
+- UnityToolkit v2.0.1.
+- WTT Client Common Lib and WTT Server Common Lib, installed separately as required dependencies.
+- Project Fika for multiplayer/Fika use.
+
+TSC does not bundle WTT Common Lib. The client and server projects reference the installed WTT dependency DLLs at runtime/build time, so WTT should be listed as a dependency on Forge rather than redistributed inside the TSC package.
+
+Do not install the old SamSWAT Fire Support or Arys Reloaded mod alongside TSC. TSC is a derivative replacement package.
+
+## Installation
+
+1. Back up your profiles before testing the public beta.
+2. Install the required dependencies listed above.
+3. Extract the release ZIP directly into your SPT root.
+4. Confirm these folders exist after extraction:
+   - `BepInEx/plugins/Tylevo.TacticalServicesControl/`
+   - `SPT/user/mods/Tylevo.TacticalServicesControl/`
+5. Start SPT normally.
+
+Do not place the ZIP contents inside an extra nested folder.
+
+## How To Use
+
+1. Bring the **TerraGroup TSC Uplink** into raid.
+2. Press `U` to open the phone.
+3. Buy a support authorization using carried or stash roubles.
+4. Open the gestures menu, default input: double tap `Y`.
+5. Select a support option in the radial menu.
+6. For A-10 / Double Pass / UH-60 / Priority Exfil, equip the in-game rangefinder and mark a location.
+7. For A-10 support, confirm the strike direction by moving the mouse left or right, then click `LMB`.
+8. UAV Recon and Focused Sweep deploy directly from the YY menu.
+9. To cancel before confirming a support request, press `Alt + RMB` or equip another weapon/item.
+
+Settings can be changed in the BepInEx configuration manager with `F12`.
+
+Server/host settings can also be changed from the local TSC Dashboard:
+
+```text
+https://127.0.0.1:6969/tsc/admin
+```
+
+The dashboard is localhost-only by default. Do not port-forward it.
 
 ## Features
 
@@ -18,43 +74,9 @@ This project is derivative of SamSWAT's original Fire Support and SamSWAT's Fire
 - Fika host-authoritative settings sync.
 - Local TSC Dashboard configuration.
 
-## Requirements
-
-- SPT 4.0.13.
-- UnityToolkit v2.0.1.
-- WTT Client Common Lib and WTT Server Common Lib, installed separately as required dependencies.
-- Project Fika for multiplayer/Fika use.
-
-TSC does not bundle WTT Common Lib. The client and server projects reference the installed WTT dependency DLLs at runtime/build time, so WTT should be listed as a dependency on Forge rather than redistributed inside the TSC package.
-
-## Installation
-
-1. Back up your profiles before testing the public beta.
-2. Install the required dependencies listed above.
-3. Extract the release ZIP directly into your SPT root.
-4. Confirm these folders exist after extraction:
-   - `BepInEx/plugins/Tylevo.TacticalServicesControl/`
-   - `SPT/user/mods/Tylevo.TacticalServicesControl/`
-5. Start SPT normally.
-
-Do not place the ZIP contents inside an extra nested folder.
-
 ## Fika Installation
 
 Install the same TSC version on the host, any headless host, and every client. The host config is authoritative while connected. Client local config does not override host settings during a joined raid, dashboard changes on the host sync to clients, and disconnect clears synced overrides.
-
-## How To Use
-
-- The TerraGroup TSC Uplink appears at the configured trader/assort.
-- Press `U` to equip/open the TSC Uplink.
-- Left click advances through non-payment screens.
-- Use `1`, `2`, and `3` to choose valid categories/options.
-- Press Enter to start the confirmation sequence.
-- Right click or `U` cancels before payment commit.
-- The swipe animation is visual only.
-- Previous weapon restores cleanly.
-- YY/rangefinder deployment still handles targeted support after authorization.
-- UAV Recon and Focused Sweep do not require the rangefinder.
 
 ## Payment Modes
 
