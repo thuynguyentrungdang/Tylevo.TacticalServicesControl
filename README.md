@@ -22,17 +22,20 @@ This project is derivative of SamSWAT's original Fire Support and SamSWAT's Fire
 
 - SPT 4.0.13.
 - UnityToolkit v2.0.1.
-- WTT Client Common Lib and WTT Server Common Lib.
+- WTT Client Common Lib and WTT Server Common Lib, installed separately as required dependencies.
 - Project Fika for multiplayer/Fika use.
+
+TSC does not bundle WTT Common Lib. The client and server projects reference the installed WTT dependency DLLs at runtime/build time, so WTT should be listed as a dependency on Forge rather than redistributed inside the TSC package.
 
 ## Installation
 
 1. Back up your profiles before testing the public beta.
-2. Extract the release ZIP directly into your SPT root.
-3. Confirm these folders exist after extraction:
+2. Install the required dependencies listed above.
+3. Extract the release ZIP directly into your SPT root.
+4. Confirm these folders exist after extraction:
    - `BepInEx/plugins/Tylevo.TacticalServicesControl/`
    - `SPT/user/mods/Tylevo.TacticalServicesControl/`
-4. Start SPT normally.
+5. Start SPT normally.
 
 Do not place the ZIP contents inside an extra nested folder.
 

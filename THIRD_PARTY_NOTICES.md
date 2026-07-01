@@ -15,6 +15,10 @@ TSC-specific additions include the TerraGroup TSC Uplink, phone authorization fl
 
 Tylevo's Tactical Services Control is released under Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0), matching the upstream Arys Reloaded source license. Arys clarified that the Forge/SPT Hub BY-NC 3.0 listing was due to historical site limitations before the Forge migration.
 
+## Runtime Dependencies Not Bundled
+
+TSC depends on UnityToolkit, WTT Client Common Lib, WTT Server Common Lib, and Project Fika for multiplayer use. These dependencies are not redistributed inside the TSC package and should be installed separately.
+
 ## Manimal Hacker Mod
 
 The UAV activation phone/use-prefab work includes material adapted from Manimal Hacker Mod.

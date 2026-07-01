@@ -11,6 +11,8 @@ TSC keeps its own timed UAV activation, payment, Fika sync, and enemy-only filte
 
 Project license posture: Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0), matching the upstream Arys Reloaded source license. Arys clarified that the Forge/SPT Hub BY-NC 3.0 listing was due to historical site limitations before the Forge migration. Third-party assets keep their own notices and license terms.
 
+Runtime dependencies not bundled: UnityToolkit, WTT Client Common Lib, WTT Server Common Lib, and Project Fika for multiplayer use. Install these dependencies separately.
+
 UAV activation phone assets are adapted from Manimal Hacker Mod.
 Source: https://github.com/danauraborealis/ManimalHackerMod
 License: MIT License

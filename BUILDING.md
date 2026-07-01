@@ -7,8 +7,10 @@ This repository does not include proprietary EFT or SPT assemblies. Provide loca
 - .NET SDK compatible with the project.
 - SPT 4.0.13 reference assemblies.
 - UnityToolkit v2.0.1.
-- WTT Client Common Lib and WTT Server Common Lib.
+- WTT Client Common Lib and WTT Server Common Lib, installed separately as dependencies.
 - Project Fika references if building the Fika plugin.
+
+TSC references WTT Common Lib from the local SPT dependency install. Do not copy WTT Common Lib source or binaries into the TSC source tree or release archive.
 
 ## Reference Paths
 
