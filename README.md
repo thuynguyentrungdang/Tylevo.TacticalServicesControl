@@ -20,7 +20,7 @@ This project is derivative of SamSWAT's original Fire Support and SamSWAT's Fire
 - SPT 4.0.13.
 - UnityToolkit v2.0.1.
 - WTT Client Common Lib and WTT Server Common Lib, installed separately as required dependencies.
-- Project Fika for multiplayer/Fika use.
+- Project Fika, optional and only for multiplayer/Fika use. Single-player installs do not need Fika; TSC detects it at runtime.
 
 TSC does not bundle WTT Common Lib. The client and server projects reference the installed WTT dependency DLLs at runtime/build time, so WTT should be listed as a dependency on Forge rather than redistributed inside the TSC package.
 

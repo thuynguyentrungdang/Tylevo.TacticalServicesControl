@@ -1,5 +1,7 @@
 # Fika
 
+Fika is a soft dependency. The TSC Fika plugin ships in every package but only activates when `com.fika.core` is loaded; on single-player installs it logs an informational message and stays idle.
+
 Install the same TSC version on:
 
 - Host.
