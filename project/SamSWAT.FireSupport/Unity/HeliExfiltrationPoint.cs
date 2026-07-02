@@ -34,7 +34,7 @@ public class HeliExfiltrationPoint : MonoBehaviour, IPhysicsTrigger
 
 		if (_coroutine == null)
 		{
-			_coroutine = StartCoroutine(Timer(player.ProfileId));
+			_coroutine = StartCoroutine(Timer(player));
 		}
 	}
 
@@ -68,7 +68,7 @@ public class HeliExfiltrationPoint : MonoBehaviour, IPhysicsTrigger
 		_timer = FireSupportTuningSettings.GetHelicopterExtractTime();
 	}
 
-	private IEnumerator Timer(string profileId)
+	private IEnumerator Timer(Player player)
 	{
 		while (_timer > 0)
 		{
@@ -76,7 +76,18 @@ public class HeliExfiltrationPoint : MonoBehaviour, IPhysicsTrigger
 			_timer -= Time.deltaTime;
 		}
 
-		((ISessionStopper)Singleton<AbstractGame>.Instance).StopSession(profileId, ExitStatus.Survived,
+		_battleUIPanelExitTrigger.Close();
+
+		// In a Fika session the extraction must go through Fika's extract flow
+		// (host stays to keep the session alive, clients despawn cleanly).
+		// Stopping the session directly here put the lobby into limbo when the
+		// host extracted before other players.
+		if (FireSupportExtraction.TryOverrideExtract(player, "UH-60 Black Hawk"))
+		{
+			yield break;
+		}
+
+		((ISessionStopper)Singleton<AbstractGame>.Instance).StopSession(player.ProfileId, ExitStatus.Survived,
 			"UH-60 Black Hawk");
 	}
 }

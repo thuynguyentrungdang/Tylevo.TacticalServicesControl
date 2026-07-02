@@ -3,6 +3,8 @@ using BepInEx.Logging;
 using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
+using Fika.Core.Main.GameMode;
+using Fika.Core.Main.Players;
 using Fika.Core.Main.Utils;
 using Fika.Core.Modding;
 using Fika.Core.Modding.Events;
@@ -50,6 +52,7 @@ public static class FikaIntegration
 			UavPhoneVisualNetworkService.PhoneVisualRequested += OnLocalUavPhoneVisualRequested;
 		}
 		FireSupportPayment.SettingsChanged += OnEffectiveSettingsChanged;
+		FireSupportExtraction.ExtractOverride = OnExtractOverride;
 		FikaEventDispatcher.SubscribeEvent<FikaNetworkManagerCreatedEvent>(OnFikaNetworkManagerCreated);
 	}
 
@@ -66,6 +69,7 @@ public static class FikaIntegration
 		s_settingsBroadcastDebounceCts?.Cancel();
 		s_settingsBroadcastDebounceCts?.Dispose();
 		s_settingsBroadcastDebounceCts = null;
+		FireSupportExtraction.ExtractOverride = null;
 		s_registeredPacketManagers.Clear();
 		A10TracerNetworking.SetNetworkAuthorityActive(false, "plugin destroyed");
 		ClearHostAuthority("plugin destroyed");
@@ -798,7 +802,39 @@ public static class FikaIntegration
 		}
 	}
 
+	// UH-60 extraction: in a Fika session the raid must end through Fika's
+	// extract flow. The host stays to keep the session alive for remaining
+	// players; stopping the session directly stranded the lobby.
+	private static bool OnExtractOverride(Player player, string exitName)
+	{
+		try
+		{
+			if (!FikaBackendUtils.IsServer && !FikaBackendUtils.IsClient)
+			{
+				return false;
+			}
+
+			if (Singleton<AbstractGame>.Instance is not CoopGame coopGame ||
+			    player is not FikaPlayer fikaPlayer)
+			{
+				return false;
+			}
+
+			coopGame.ExitStatus = ExitStatus.Survived;
+			coopGame.ExitLocation = exitName;
+			coopGame.Extract(fikaPlayer, null, null);
+			TscDiagnostics.LogFika($"UH-60 extraction routed through Fika extract. exit={exitName}");
+			return true;
+		}
+		catch (Exception ex)
+		{
+			s_logSource?.LogWarning($"Fika extract routing failed; falling back to session stop. {ex}");
+			return false;
+		}
+	}
+
 	private static bool IsSupportedNetworkType(ESupportType supportType)
+
 	{
 		return supportType == ESupportType.Strafe ||
 		       supportType == ESupportType.Extract ||
