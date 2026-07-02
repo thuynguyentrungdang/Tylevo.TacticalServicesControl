@@ -1383,10 +1383,10 @@ public sealed class FireSupportServerConfigService(
 			{
 				["A10"] = 250000,
 				["DoublePass"] = 450000,
-				["Extraction"] = 50000,
-				["PriorityExfil"] = 150000,
-				["Uav"] = 100000,
-				["FocusedSweep"] = 75000
+				["Extraction"] = 300000,
+				["PriorityExfil"] = 450000,
+				["Uav"] = 125000,
+				["FocusedSweep"] = 90000
 			},
 			Enabled = new Dictionary<string, bool>
 			{
@@ -1409,7 +1409,7 @@ public sealed class FireSupportServerConfigService(
 				Mode = "PersistentAuthorizations",
 				ConsumeOn = "AuthorizationAccepted",
 				RefundFailedDispatch = true,
-				MaxStoredAuthorizationsPerService = 3,
+				MaxStoredAuthorizationsPerService = 2,
 				PendingUseTimeoutSeconds = 180,
 				SpendCreditsBeforeCash = true,
 				AllowAutoPurchaseOnUse = true

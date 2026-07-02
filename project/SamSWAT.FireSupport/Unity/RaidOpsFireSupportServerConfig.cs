@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace SamSWAT.FireSupport.ArysReloaded.Unity;
 
@@ -53,7 +53,7 @@ public sealed class RaidOpsFireSupportServerConfig
 		public string Mode { get; set; } = "PersistentAuthorizations";
 		public string ConsumeOn { get; set; } = "AuthorizationAccepted";
 		public bool RefundFailedDispatch { get; set; } = true;
-		public int MaxStoredAuthorizationsPerService { get; set; } = 3;
+		public int MaxStoredAuthorizationsPerService { get; set; } = 2;
 		public int PendingUseTimeoutSeconds { get; set; } = 180;
 		public bool SpendCreditsBeforeCash { get; set; } = true;
 		public bool AllowAutoPurchaseOnUse { get; set; } = true;

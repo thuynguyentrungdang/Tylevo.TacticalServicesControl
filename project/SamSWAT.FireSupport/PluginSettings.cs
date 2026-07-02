@@ -173,25 +173,25 @@ internal static class PluginSettings
 		ExtractionRequestCostRoubles = config.Bind(
 			"Main Settings",
 			"Helicopter extraction cost",
-			50000,
+			300000,
 			new ConfigDescription("Carried roubles required to request a UH-60 extraction",
 				new AcceptableValueRange<int>(0, 10000000)));
 		PriorityExfilRequestCostRoubles = config.Bind(
 			"Main Settings",
 			"Priority exfil cost",
-			150000,
+			450000,
 			new ConfigDescription("Carried roubles required to request an expedited UH-60 extraction authorization",
 				new AcceptableValueRange<int>(0, 10000000)));
 		UavRequestCostRoubles = config.Bind(
 			"Main Settings",
 			"UAV recon cost",
-			100000,
+			125000,
 			new ConfigDescription("Carried roubles required to request a timed UAV recon scan",
 				new AcceptableValueRange<int>(0, 10000000)));
 		FocusedSweepRequestCostRoubles = config.Bind(
 			"Main Settings",
 			"Focused sweep cost",
-			75000,
+			90000,
 			new ConfigDescription("Carried roubles required to request a shorter, narrower, faster-refresh UAV sweep",
 				new AcceptableValueRange<int>(0, 10000000)));
 		EnablePriorityExfil = config.Bind(

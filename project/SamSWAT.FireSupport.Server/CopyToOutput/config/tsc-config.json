@@ -6,10 +6,10 @@
   "prices": {
     "A10": 250000,
     "DoublePass": 450000,
-    "Extraction": 50000,
-    "PriorityExfil": 150000,
-    "Uav": 100000,
-    "FocusedSweep": 75000
+    "Extraction": 300000,
+    "PriorityExfil": 450000,
+    "Uav": 125000,
+    "FocusedSweep": 90000
   },
   "enabled": {
     "A10": true,
@@ -29,7 +29,7 @@
     "mode": "PersistentAuthorizations",
     "consumeOn": "AuthorizationAccepted",
     "refundFailedDispatch": true,
-    "maxStoredAuthorizationsPerService": 3,
+    "maxStoredAuthorizationsPerService": 2,
     "pendingUseTimeoutSeconds": 180,
     "spendCreditsBeforeCash": true,
     "allowAutoPurchaseOnUse": true
