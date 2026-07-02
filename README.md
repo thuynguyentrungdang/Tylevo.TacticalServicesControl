@@ -41,7 +41,7 @@ Do not place the ZIP contents inside an extra nested folder.
 ## How To Use
 
 1. Bring the **TerraGroup TSC Uplink** into raid.
-2. Press `U` to open the phone.
+2. Press `U` to open the phone. Press `1`-`3` to highlight a menu option, click `LMB` to tap through screens, and press `Enter` on the confirm screen to complete the purchase.
 3. Buy a support authorization using carried or stash roubles.
 4. Open the gestures menu, default input: double tap `Y`.
 5. Select a support option in the radial menu.
