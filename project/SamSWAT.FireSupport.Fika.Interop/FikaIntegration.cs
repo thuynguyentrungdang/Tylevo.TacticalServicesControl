@@ -472,7 +472,8 @@ public static class FikaIntegration
 			A10TracerPlayback.Play(
 				packet.Segments,
 				Time.time,
-				GetRaidCancellationToken());
+				GetRaidCancellationToken(),
+				spawnImpactEffects: true);
 		}
 		catch (Exception ex)
 		{
