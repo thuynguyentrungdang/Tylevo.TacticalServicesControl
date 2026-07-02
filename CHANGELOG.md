@@ -15,6 +15,7 @@
 
 - Rebalanced default prices for new installs: Extraction 300k (was 50k), Priority Exfil 450k (was 150k), UAV 125k (was 100k), Focused Sweep 90k (was 75k). A-10 Strafe and Double Pass unchanged. Max stored authorizations per service reduced from 3 to 2. Existing configs keep their saved values.
 - TSC now declares a BepInEx incompatibility with SamSWAT's Fire Support: Arys Reloaded (requested by Arys). TSC is its derivative replacement and the two cannot run together; BepInEx now skips TSC with a clear message instead of letting them corrupt each other.
+- Dashboard is easier to find: opening `/tsc` in a browser now redirects to the dashboard at `/tsc/admin` (the game's config polling is unaffected), the dashboard asset error now names the folder it expects so missing installs are self-diagnosable, and the README dashboard URL was corrected.
 
 ## 0.9.3 - Public Beta (released as v1.0.3)
 
