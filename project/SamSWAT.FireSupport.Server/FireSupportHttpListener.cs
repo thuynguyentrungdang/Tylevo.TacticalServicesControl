@@ -66,6 +66,16 @@ public sealed class FireSupportHttpListener(FireSupportServerConfigService confi
 		    (string.Equals(path, "/tsc", StringComparison.OrdinalIgnoreCase) ||
 		     string.Equals(path, "/tsc/config", StringComparison.OrdinalIgnoreCase)))
 		{
+			// A browser opening /tsc wants the dashboard, not the config snapshot
+			// the game client polls. The client never sends an html Accept header,
+			// so redirecting browsers does not affect config polling.
+			if (string.Equals(path, "/tsc", StringComparison.OrdinalIgnoreCase) &&
+			    httpContext.Request.Headers.Accept.ToString().Contains("text/html", StringComparison.OrdinalIgnoreCase))
+			{
+				httpContext.Response.Redirect("/tsc/admin");
+				return;
+			}
+
 			await WriteJsonAsync(httpContext, 200, configService.GetSnapshot(sessionId, ReadIdentityFromQuery(httpContext)));
 			return;
 		}
@@ -121,7 +131,14 @@ public sealed class FireSupportHttpListener(FireSupportServerConfigService confi
 		if (!TryGetAdminAsset(path, out string fileName, out string contentType) ||
 		    !TryResolveAdminAssetPath(fileName, out string filePath))
 		{
-			await WriteJsonAsync(httpContext, 404, new { error = "TSC dashboard asset not found." });
+			// Name the expected folder so a missing/partial install is
+			// self-diagnosable from the browser (this route is local-only by
+			// default, so the path disclosure stays on the admin's machine).
+			await WriteJsonAsync(httpContext, 404, new
+			{
+				error = "TSC dashboard asset not found.",
+				hint = $"Expected dashboard files (index.html, app.mjs, styles.css) in: {configService.WebRootPath}. Re-extract the TSC release zip with the server stopped if the folder is missing."
+			});
 			return;
 		}
 

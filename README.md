@@ -1,4 +1,4 @@
-# Tylevo's Tactical Services Control
+﻿# Tylevo's Tactical Services Control
 
 A BepInEx mod that reworks SamSWAT's Fire Support / Arys Reloaded into a TerraGroup-style tactical support system for SPT and Fika.
 
@@ -55,7 +55,7 @@ The BepInEx configuration manager opened with `F12` only shows the local dashboa
 Server/host settings are changed from the local TSC Dashboard:
 
 ```text
-https://127.0.0.1:6969/tsc
+https://127.0.0.1:6969/tsc/admin
 ```
 
 The dashboard is localhost-only by default. Do not port-forward it.
