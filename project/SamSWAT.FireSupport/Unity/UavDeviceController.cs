@@ -255,9 +255,17 @@ public sealed class UavDeviceController : Player.UsableItemController, IOnHandsU
 			return;
 		}
 
-		if (Input.GetKeyDown(KeyCode.Escape) || Input.GetMouseButtonDown(1))
+		if (Input.GetKeyDown(KeyCode.Escape))
 		{
 			FinishAuthorizationSession(playOutro: true, success: false);
+			return;
+		}
+
+		// RMB steps back one screen instead of cancelling the whole session;
+		// Escape remains the full cancel.
+		if (Input.GetMouseButtonDown(1))
+		{
+			HandleBack();
 			return;
 		}
 
@@ -512,23 +520,32 @@ public sealed class UavDeviceController : Player.UsableItemController, IOnHandsU
 		if (onePressed)
 		{
 			Input.ResetInputAxes();
-			SelectSupportType(ESupportType.Extract);
+			OpenServiceCategory(ESupportType.Extract);
 			return true;
 		}
 		else if (twoPressed)
 		{
 			Input.ResetInputAxes();
-			SelectSupportType(ESupportType.Strafe);
+			OpenServiceCategory(ESupportType.Strafe);
 			return true;
 		}
 		else if (threePressed)
 		{
 			Input.ResetInputAxes();
-			SelectSupportType(ESupportType.Uav);
+			OpenServiceCategory(ESupportType.Uav);
 			return true;
 		}
 
 		return false;
+	}
+
+	// One keypress opens the category directly. Requiring a separate LMB tap
+	// after highlighting a tab was the single most reported point of confusion.
+	private void OpenServiceCategory(ESupportType supportType)
+	{
+		SelectSupportType(supportType);
+		PlayTap(0.05f);
+		ShowPhoneState(TerraGroupPhoneState.ServiceCategory);
 	}
 
 	private void HandleTap()
@@ -569,6 +586,33 @@ public sealed class UavDeviceController : Player.UsableItemController, IOnHandsU
 	{
 		// Manual portrait swipe input is intentionally disabled for release.
 		// The swipe is a visual overlay in the Enter-confirm sequence.
+	}
+
+	private void HandleBack()
+	{
+		PlayTap(0.05f);
+
+		switch (_phoneState)
+		{
+			case TerraGroupPhoneState.TacticalServices:
+				ShowPhoneState(TerraGroupPhoneState.Home);
+				break;
+			case TerraGroupPhoneState.ServiceCategory:
+				ShowPhoneState(TerraGroupPhoneState.TacticalServices);
+				break;
+			case TerraGroupPhoneState.ServiceReview:
+			case TerraGroupPhoneState.RotateToConfirm:
+				ShowPhoneState(TerraGroupPhoneState.ServiceCategory);
+				break;
+			case TerraGroupPhoneState.Authorized:
+			case TerraGroupPhoneState.Denied:
+				FinishAuthorizationSession(playOutro: true, success: _phoneState == TerraGroupPhoneState.Authorized);
+				break;
+			default:
+				// Home and any unexpected state: backing out closes the phone.
+				FinishAuthorizationSession(playOutro: true, success: false);
+				break;
+		}
 	}
 
 	private static bool IsRotatePromptState(TerraGroupPhoneState state)
