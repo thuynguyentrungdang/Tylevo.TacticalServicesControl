@@ -1117,7 +1117,24 @@ public static class FireSupportPayment
 
 	private static IEnumerable<Item> GetCarriedRoubleStacks(Player player)
 	{
-		if (player.InventoryController != null)
+		// Walk the full equipment tree rather than GetReachableItemsOfType:
+		// "reachable" excludes the secure container, so money stored there was
+		// invisible to carried-rouble counting and spending.
+		Item equipmentRoot = player?.Profile?.Inventory?.Equipment;
+		if (equipmentRoot != null)
+		{
+			foreach (Item item in equipmentRoot.GetAllItems())
+			{
+				if (IsRouble(item))
+				{
+					yield return item;
+				}
+			}
+
+			yield break;
+		}
+
+		if (player?.InventoryController != null)
 		{
 			foreach (Item item in player.InventoryController.GetReachableItemsOfType<Item>(IsRouble))
 			{
