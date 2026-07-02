@@ -13,11 +13,10 @@ namespace SamSWAT.FireSupport.ArysReloaded;
 [BepInDependency("com.SPT.core", ModMetadata.TARGET_SPT_VERSION)]
 [BepInDependency("com.arys.unitytoolkit", "2.0.1")]
 [BepInDependency("com.wtt.commonlib")]
-// TSC is a derivative replacement for Arys' Fire Support and shares asset and
-// assembly identity with that lineage; running them together corrupts type and
-// bundle resolution. Incompatibilities requested by Arys.
+// TSC is a derivative replacement for Arys' Fire Support and shares its
+// assembly identity for bundle compatibility; running both corrupts type and
+// bundle resolution, so BepInEx must never load them together.
 [BepInIncompatibility("com.samswat.firesupport.arysreloaded")]
-[BepInIncompatibility("com.samswat.helicrash.arysreloaded")]
 public class FireSupportPlugin : BaseUnityPlugin
 {
 	private readonly List<UpdatableComponentBase> _componentsToUpdate = [];

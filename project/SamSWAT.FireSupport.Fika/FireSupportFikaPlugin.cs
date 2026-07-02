@@ -13,10 +13,9 @@ namespace SamSWAT.FireSupport.ArysReloaded.Fika;
 	ModMetadata.VERSION)]
 [BepInDependency("com.tylevo.tacticalservicescontrol", ModMetadata.VERSION)]
 [BepInDependency(FikaCoreGuid, BepInDependency.DependencyFlags.SoftDependency)]
-// Mirror the core plugin's incompatibilities so this plugin is skipped with a
+// Mirror the core plugin's incompatibility so this plugin is skipped with a
 // clear incompatibility message instead of a missing-dependency error.
 [BepInIncompatibility("com.samswat.firesupport.arysreloaded")]
-[BepInIncompatibility("com.samswat.helicrash.arysreloaded")]
 public class FireSupportFikaPlugin : BaseUnityPlugin
 {
 	public const string FikaCoreGuid = "com.fika.core";
