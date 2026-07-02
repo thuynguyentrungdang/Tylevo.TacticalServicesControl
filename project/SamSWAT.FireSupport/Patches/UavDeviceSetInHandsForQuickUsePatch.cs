@@ -33,6 +33,11 @@ internal sealed class UavDeviceSetInHandsForQuickUsePatch : ModulePatch
 		{
 			TscDiagnostics.LogPhone(
 				$"TSC Uplink suppressed quick-slot hand swap while active. item={item?.Id ?? "<null>"}, tpl={item?.StringTemplateId ?? "<null>"}.");
+			// Complete the callback with a failure instead of dropping it: EFT's
+			// caller waits on it, and an uninvoked callback freezes the player in
+			// the interaction state. This froze quick-use of OTHER items (meds,
+			// grenades, ground pickups) while the phone session was active.
+			callback?.Invoke(new Result<IOnHandsUseCallback>(null, "TSC Uplink session is active.", 0));
 			return false;
 		}
 
