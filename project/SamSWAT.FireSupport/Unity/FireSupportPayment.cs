@@ -518,8 +518,27 @@ public static class FireSupportPayment
 		PaymentMode paymentMode = GetActivePaymentMode();
 		if ((paymentMode == PaymentMode.PhoneAuthorizations ||
 		     paymentMode == PaymentMode.Hybrid && _serverSpendCreditsBeforeCash) &&
-		    FireSupportAuthorizations.TryConsumeForDeployment(supportType, out ESupportType consumedType))
+		    FireSupportAuthorizations.TryConsumeForDeployment(supportType, out ESupportType consumedType, out bool serverBacked))
 		{
+			// Local credits (carried-rouble purchases) have no ledger entry; asking
+			// the server to consume one gets rejected and the credit becomes
+			// unusable. Consume them purely client-side.
+			if (!serverBacked)
+			{
+				NotificationManagerClass.DisplayMessageNotification(
+					$"Used prepaid {GetSupportName(consumedType)} authorization.",
+					ENotificationDurationType.Default,
+					ENotificationIconType.Default,
+					null);
+				return new FireSupportAuthorizationUse
+				{
+					Ok = true,
+					ConsumedAuthorization = true,
+					ConsumedAuthorizationType = consumedType,
+					ServerBacked = false
+				};
+			}
+
 			string requestId = Guid.NewGuid().ToString("N");
 			FireSupportPurchaseResponse response = await FireSupportServerConfigClient.ConsumeAuthorizationAsync(
 				consumedType,
@@ -547,7 +566,7 @@ public static class FireSupportPayment
 				};
 			}
 
-			FireSupportAuthorizations.Refund(consumedType);
+			FireSupportAuthorizations.Refund(consumedType, serverBacked: true);
 			NotifyAuthorizationRequired(supportType);
 			return FireSupportAuthorizationUse.Failed(consumedType);
 		}
@@ -590,7 +609,9 @@ public static class FireSupportPayment
 			return;
 		}
 
-		FireSupportAuthorizations.Refund(authorizationUse.ConsumedAuthorizationType);
+		FireSupportAuthorizations.Refund(
+			authorizationUse.ConsumedAuthorizationType,
+			authorizationUse.ServerBacked);
 		if (authorizationUse.ServerBacked && _serverRefundFailedDispatch)
 		{
 			FireSupportServerConfigClient.RefundAuthorizationAsync(
@@ -775,7 +796,7 @@ public static class FireSupportPayment
 		}
 		else
 		{
-			GrantAuthorization(supportType, notify);
+			GrantServerAuthorization(supportType, notify);
 		}
 
 		serverResult.AuthorizationGranted = true;
@@ -955,6 +976,17 @@ public static class FireSupportPayment
 	private static void GrantAuthorization(ESupportType supportType, bool notify)
 	{
 		FireSupportAuthorizations.Grant(supportType);
+		if (notify)
+		{
+			NotifyAuthorizationPurchased(supportType);
+		}
+	}
+
+	private static void GrantServerAuthorization(ESupportType supportType, bool notify)
+	{
+		// The server charged for this credit, so it belongs to the ledger-backed
+		// store; the next config sync will confirm or correct it.
+		FireSupportAuthorizations.GrantServer(supportType);
 		if (notify)
 		{
 			NotifyAuthorizationPurchased(supportType);
