@@ -468,9 +468,17 @@ public static class FireSupportServerConfigClient
 	private static bool TryBuildEndpoint(string route, out Uri endpoint)
 	{
 		endpoint = null;
-		string baseUrl = !string.IsNullOrWhiteSpace(s_hostPurchaseBaseUrl)
-			? s_hostPurchaseBaseUrl
-			: PluginSettings.ServerConfigUrl?.Value;
+
+		// s_hostPurchaseBaseUrl is only ever set on a Fika client (from the host
+		// settings packet). A host running default config broadcasts its own
+		// loopback URL (127.0.0.1), which is meaningless to a remote client and
+		// used to override the client's own correctly-configured host address.
+		// Ignore a loopback host broadcast so the client's own ServerConfigUrl
+		// (which the player points at the host's reachable IP) takes effect.
+		string baseUrl =
+			!string.IsNullOrWhiteSpace(s_hostPurchaseBaseUrl) && !IsLoopbackUrl(s_hostPurchaseBaseUrl)
+				? s_hostPurchaseBaseUrl
+				: PluginSettings.ServerConfigUrl?.Value;
 		if (string.IsNullOrWhiteSpace(baseUrl) ||
 		    !Uri.TryCreate(baseUrl.TrimEnd('/') + "/", UriKind.Absolute, out Uri baseUri) ||
 		    (baseUri.Scheme != Uri.UriSchemeHttp && baseUri.Scheme != Uri.UriSchemeHttps))
@@ -480,6 +488,21 @@ public static class FireSupportServerConfigClient
 
 		endpoint = new Uri(baseUri, route);
 		return true;
+	}
+
+	private static bool IsLoopbackUrl(string url)
+	{
+		if (!Uri.TryCreate(url.TrimEnd('/') + "/", UriKind.Absolute, out Uri uri))
+		{
+			return false;
+		}
+
+		if (string.Equals(uri.Host, "localhost", StringComparison.OrdinalIgnoreCase))
+		{
+			return true;
+		}
+
+		return IPAddress.TryParse(uri.Host, out IPAddress ip) && IPAddress.IsLoopback(ip);
 	}
 
 	private static string BuildConfigRoute()

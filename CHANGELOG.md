@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.9.5 - Public Beta (released as v1.0.5)
+
+### Fixed
+
+- Fika clients can now use stash-based purchases when they point their TSC server URL at the host. A host running default config broadcasts its own loopback address (127.0.0.1), which used to override each client's configured host address and send the purchase to the client's own machine. A loopback host broadcast is now ignored so the client's own Server Config URL takes effect. (For zero-config clients, the host can instead set its Server Config URL to its LAN IP; or use the CarriedRoubles payment source, which is fully client-side.)
+- UH-60 extraction as a Fika host no longer strands the lobby. Extraction routed through EFT's session stop instead of Fika's extract flow, so a host extracting first killed the hosted session while other players kept playing into a dead lobby. Extraction now goes through Fika's extract path (host to spectate, session stays alive); solo and non-Fika installs are unchanged.
+
+### Changed
+
+- Phone navigation simplified. Number keys (1-3) now open a category directly instead of only highlighting it, RMB steps back one screen, and Escape closes the phone. Enter still only confirms on the final screen so stray input cannot spend money.
+- The TerraGroup TSC Uplink now uses the special-equipment look: orange grid background and the orange SPEC tag, matching the rangefinder, so it sorts and reads as special-slot gear.
+
 ## 0.9.4 - Public Beta (released as v1.0.4)
 
 ### Fixed
