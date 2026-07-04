@@ -3,6 +3,7 @@ using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
 using Newtonsoft.Json;
+using SPT.Common.Http;
 using System;
 using System.Net;
 using System.Net.Http;
@@ -14,7 +15,6 @@ namespace SamSWAT.FireSupport.ArysReloaded.Unity;
 
 public static class FireSupportServerConfigClient
 {
-	private static readonly HttpClient s_httpClient = CreateHttpClient();
 	private static CancellationTokenSource s_refreshCts;
 	private static bool s_initialized;
 	private static bool s_suppressedByFikaClient;
@@ -103,12 +103,6 @@ public static class FireSupportServerConfigClient
 			ServerRevision = Math.Max(clientKnownRevision, s_hostPurchaseRevision)
 		};
 
-		if (!TryBuildEndpoint("purchase", out Uri endpoint))
-		{
-			FireSupportPlugin.LogSource.LogWarning("FireSupport purchase request skipped: no usable server config URL.");
-			return fallback;
-		}
-
 		try
 		{
 			var body = new FireSupportPurchaseRequest
@@ -120,14 +114,8 @@ public static class FireSupportServerConfigClient
 				ClientKnownRevision = clientKnownRevision,
 				Quantity = 1
 			};
-			using var request = new HttpRequestMessage(HttpMethod.Post, endpoint)
-			{
-				Content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json")
-			};
-			AddAuthHeader(request);
-
-			using HttpResponseMessage response = await s_httpClient.SendAsync(request);
-			string responseBody = await response.Content.ReadAsStringAsync();
+			string responseBody = await SendServerRequestAsync(
+				HttpMethod.Post, "purchase", JsonConvert.SerializeObject(body), CancellationToken.None);
 			FireSupportPurchaseResponse result = JsonConvert.DeserializeObject<FireSupportPurchaseResponse>(responseBody);
 			if (result == null)
 			{
@@ -135,16 +123,11 @@ public static class FireSupportServerConfigClient
 				return fallback;
 			}
 
-			if (!response.IsSuccessStatusCode && string.IsNullOrWhiteSpace(result.Reason))
-			{
-				result.Reason = $"Http{(int)response.StatusCode}";
-			}
-
 			return result;
 		}
 		catch (Exception ex)
 		{
-			FireSupportPlugin.LogSource.LogWarning($"FireSupport purchase request failed: {endpoint}. {ex}");
+			FireSupportPlugin.LogSource.LogWarning($"FireSupport purchase request failed. {ex}");
 			fallback.Reason = "RequestFailed";
 			return fallback;
 		}
@@ -189,12 +172,6 @@ public static class FireSupportServerConfigClient
 			ServerRevision = Math.Max(clientKnownRevision, s_hostPurchaseRevision)
 		};
 
-		if (!TryBuildEndpoint("purchase", out Uri endpoint))
-		{
-			FireSupportPlugin.LogSource.LogWarning($"FireSupport authorization {action} skipped: no usable server config URL.");
-			return fallback;
-		}
-
 		try
 		{
 			var body = new FireSupportPurchaseRequest
@@ -207,14 +184,8 @@ public static class FireSupportServerConfigClient
 				ClientKnownRevision = clientKnownRevision,
 				Quantity = 1
 			};
-			using var request = new HttpRequestMessage(HttpMethod.Post, endpoint)
-			{
-				Content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json")
-			};
-			AddAuthHeader(request);
-
-			using HttpResponseMessage response = await s_httpClient.SendAsync(request);
-			string responseBody = await response.Content.ReadAsStringAsync();
+			string responseBody = await SendServerRequestAsync(
+				HttpMethod.Post, "purchase", JsonConvert.SerializeObject(body), CancellationToken.None);
 			FireSupportPurchaseResponse result = JsonConvert.DeserializeObject<FireSupportPurchaseResponse>(responseBody);
 			if (result == null)
 			{
@@ -222,16 +193,11 @@ public static class FireSupportServerConfigClient
 				return fallback;
 			}
 
-			if (!response.IsSuccessStatusCode && string.IsNullOrWhiteSpace(result.Reason))
-			{
-				result.Reason = $"Http{(int)response.StatusCode}";
-			}
-
 			return result;
 		}
 		catch (Exception ex)
 		{
-			FireSupportPlugin.LogSource.LogWarning($"FireSupport authorization {action} failed: {endpoint}. {ex}");
+			FireSupportPlugin.LogSource.LogWarning($"FireSupport authorization {action} failed. {ex}");
 			fallback.Reason = "RequestFailed";
 			return fallback;
 		}
@@ -296,25 +262,11 @@ public static class FireSupportServerConfigClient
 
 	private static async UniTask FetchConfigOnce(CancellationToken cancellationToken)
 	{
-		if (!TryBuildEndpoint(BuildConfigRoute(), out Uri endpoint))
-		{
-			HandleConfigFailure("invalid server config URL");
-			return;
-		}
-
 		try
 		{
-			TscDiagnostics.LogPayment($"TSC server config URL requested: {endpoint}");
-			using var request = new HttpRequestMessage(HttpMethod.Get, endpoint);
-			AddAuthHeader(request);
-			using HttpResponseMessage response = await s_httpClient.SendAsync(request, cancellationToken);
-			string body = await response.Content.ReadAsStringAsync();
-			if (!response.IsSuccessStatusCode)
-			{
-				HandleConfigFailure($"HTTP {(int)response.StatusCode}");
-				return;
-			}
-
+			string route = BuildConfigRoute();
+			TscDiagnostics.LogPayment($"TSC server config requested: {route}");
+			string body = await SendServerRequestAsync(HttpMethod.Get, route, null, cancellationToken);
 			RaidOpsFireSupportServerConfig snapshot = JsonConvert.DeserializeObject<RaidOpsFireSupportServerConfig>(body);
 			if (snapshot == null)
 			{
@@ -465,44 +417,22 @@ public static class FireSupportServerConfigClient
 		       PluginSettings.RequireServerConfigInFika?.Value == true;
 	}
 
-	private static bool TryBuildEndpoint(string route, out Uri endpoint)
+	// All in-game TSC server calls go through SPT's RequestHandler, which uses the
+	// game's own backend connection. That connection already points at the correct
+	// TSC server for the host and for every Fika client on any network (LAN, Radmin
+	// VPN, direct), and it carries the caller's session so the server charges the
+	// right player's stash automatically. The Server Config URL is not used for
+	// this and can be left at its default; a wrong value no longer matters.
+	private static async UniTask<string> SendServerRequestAsync(
+		HttpMethod method,
+		string route,
+		string jsonBody,
+		CancellationToken cancellationToken)
 	{
-		endpoint = null;
-
-		// s_hostPurchaseBaseUrl is only ever set on a Fika client (from the host
-		// settings packet). A host running default config broadcasts its own
-		// loopback URL (127.0.0.1), which is meaningless to a remote client and
-		// used to override the client's own correctly-configured host address.
-		// Ignore a loopback host broadcast so the client's own ServerConfigUrl
-		// (which the player points at the host's reachable IP) takes effect.
-		string baseUrl =
-			!string.IsNullOrWhiteSpace(s_hostPurchaseBaseUrl) && !IsLoopbackUrl(s_hostPurchaseBaseUrl)
-				? s_hostPurchaseBaseUrl
-				: PluginSettings.ServerConfigUrl?.Value;
-		if (string.IsNullOrWhiteSpace(baseUrl) ||
-		    !Uri.TryCreate(baseUrl.TrimEnd('/') + "/", UriKind.Absolute, out Uri baseUri) ||
-		    (baseUri.Scheme != Uri.UriSchemeHttp && baseUri.Scheme != Uri.UriSchemeHttps))
-		{
-			return false;
-		}
-
-		endpoint = new Uri(baseUri, route);
-		return true;
-	}
-
-	private static bool IsLoopbackUrl(string url)
-	{
-		if (!Uri.TryCreate(url.TrimEnd('/') + "/", UriKind.Absolute, out Uri uri))
-		{
-			return false;
-		}
-
-		if (string.Equals(uri.Host, "localhost", StringComparison.OrdinalIgnoreCase))
-		{
-			return true;
-		}
-
-		return IPAddress.TryParse(uri.Host, out IPAddress ip) && IPAddress.IsLoopback(ip);
+		string path = "/tsc/" + route;
+		return method == HttpMethod.Post
+			? await RequestHandler.PostJsonAsync(path, jsonBody ?? string.Empty).AsUniTask()
+			: await RequestHandler.GetJsonAsync(path).AsUniTask();
 	}
 
 	private static string BuildConfigRoute()
@@ -515,49 +445,6 @@ public static class FireSupportServerConfigClient
 
 		string encodedProfileId = Uri.EscapeDataString(profileId.Trim());
 		return $"config?profileId={encodedProfileId}&sessionId={encodedProfileId}";
-	}
-
-	private static HttpClient CreateHttpClient()
-	{
-		var handler = new HttpClientHandler
-		{
-			ServerCertificateCustomValidationCallback = ShouldAcceptSptServerCertificate
-		};
-
-		return new HttpClient(handler);
-	}
-
-	private static bool ShouldAcceptSptServerCertificate(
-		HttpRequestMessage request,
-		System.Security.Cryptography.X509Certificates.X509Certificate2 certificate,
-		System.Security.Cryptography.X509Certificates.X509Chain chain,
-		SslPolicyErrors errors)
-	{
-		if (errors == SslPolicyErrors.None)
-		{
-			return true;
-		}
-
-		Uri uri = request?.RequestUri;
-		if (uri == null || uri.Scheme != Uri.UriSchemeHttps)
-		{
-			return false;
-		}
-
-		string host = uri.Host;
-		return string.Equals(host, "localhost", StringComparison.OrdinalIgnoreCase) ||
-		       IPAddress.TryParse(host, out _);
-	}
-
-	private static void AddAuthHeader(HttpRequestMessage request)
-	{
-		string token = PluginSettings.ServerConfigAuthToken?.Value;
-		if (!string.IsNullOrWhiteSpace(token))
-		{
-			request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token.Trim());
-			request.Headers.TryAddWithoutValidation("X-TSC-Token", token.Trim());
-			request.Headers.TryAddWithoutValidation("X-RaidOps-FireSupport-Token", token.Trim());
-		}
 	}
 
 	private static string GetLocalProfileId()
