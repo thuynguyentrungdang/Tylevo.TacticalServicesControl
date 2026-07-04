@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.9.6 - Public Beta (released as v1.0.6)
+
+### Fixed
+
+- Stash purchases now work for every Fika client with no network configuration. TSC calls to the server (purchases and config/stash sync) now route through SPT's own backend connection instead of a separately configured HTTP URL, so they automatically reach the correct server for the host and for clients on any network (LAN, Radmin VPN, direct) and charge the right player's stash. The Server Config URL setting is no longer needed and can be left at its default; a wrong value no longer causes "Check the TSC server and dashboard connection."
+
 ## 0.9.5 - Public Beta (released as v1.0.5)
 
 ### Fixed
